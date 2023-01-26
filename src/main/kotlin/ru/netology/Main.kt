@@ -2,10 +2,10 @@ package ru.netology
 
 fun main() {
     //проверка лайков
-    val post = Post(authorId = 1, authorName = "Alex", text = "dsgssdgedgbdbed", comments = null, reposts = null, copyHistory = null)
+    val post = Post(authorId = 1, authorName = "Alex", text = "dsgssdgedgbdbed", original = null, comments = null, reposts = null, copyHistory = null, attachments = null)
     WallService.add(post)
-    var post1 = Post(authorId = 35, authorName = "Petrovych", text = "sldg elrbjl trjbn khtkj gskul", comments = null, reposts = null, copyHistory = null)
-    val post2 = Post(authorId = 12, authorName = "Kolya Usypov", text = "Привет", comments = null, reposts = null, copyHistory = null)
+    val post1 = Post(authorId = 35, authorName = "Petrovych", text = "sldg elrbjl trjbn khtkj gskul", original = null, comments = null, reposts = null, copyHistory = null, attachments = null)
+    val post2 = Post(authorId = 12, authorName = "Kolya Usypov", text = "Привет", comments = null, original = post1, reposts = null, copyHistory = null, attachments = null)
     WallService.add(post1)
 
     WallService.likeById(post1.id)
@@ -16,8 +16,7 @@ fun main() {
 
     println(WallService.getPostString())
 
-    post1 = post1.copy(text = "sdhve kjhbkdfb")
-    WallService.update(post1)
+
     println("----------------------")
     println(WallService.getPostString())
 
@@ -26,6 +25,29 @@ fun main() {
     WallService.likeById(post1.id)
     println("----------------------")
     println(WallService.getPostString())
+
+    var attach: Array<Attachments> = emptyArray()
+    attach += AttachAudio(
+        "audio",
+        1,
+        1,
+        "Pevec",
+        "title",
+        305,
+        "url",
+        5,
+        2,
+        3,
+        0,
+        false,
+        true
+    )
+
+    attach += AttachPhoto("photo", 3, 5, "130", "604")
+
+    for (i in attach) {
+        println(i.type)
+    }
 }
 
 object CorrectId {
@@ -48,6 +70,7 @@ object CorrectId {
 
 data class Post(
     val id: Int = CorrectId.getNewId(0),
+    val original: Post?,
     val ownerId: Int = 0,       //Идентификатор владельца стены, на которой размещена запись.
     val fromId: Int = 0,        //Идентификатор автора записи (от чьего имени опубликована запись).
     val date: Int = 0,   //Время публикации записи в формате unixtime.
@@ -73,8 +96,64 @@ data class Post(
     val likes: Likes = Likes(),
     val friendsOnly: Boolean = false,
     val canPin: Boolean = false,
-    val canEdit: Boolean = true
+    val canEdit: Boolean = true,
+    val attachments: Array<Attachments>?
 )
+
+interface Attachments {
+    val type: String
+}
+
+class AttachPhoto(
+    override val type: String = "photo",
+    val id: Int, //Идентификатор фотографии.
+    val ownerId: Int, //Идентификатор владельца фотографии.
+    val photo130: String, //URL изображения для предпросмотра.
+    val photo604: String //URL полноразмерного изображения.
+) : Attachments
+
+class AttachAudio(
+    override val type: String = "audio",
+    val id: Int, //Идентификатор аудиозаписи.
+    val ownerId: Int, //Идентификатор владельца аудиозаписи.
+    val artist: String, //Исполнитель
+    val title: String, //Название композиции.
+    val duration: Int, //Длительность аудиозаписи в секундах.
+    val url: String, //Ссылка на mp3.
+    val lyricsId: Int, //Идентификатор текста аудиозаписи (если доступно).
+    val albumId: Int, //Идентификатор альбома, в котором находится аудиозапись (если присвоен).
+    val genreId: Int, //Идентификатор жанра из списка аудио жанров.
+    val date: Int, //Дата добавления.
+    val noSearch: Boolean, //если включена опция «Не выводить при поиске». Если опция отключена, поле не возвращается.
+    val isHq: Boolean // если аудио в высоком качестве.
+) : Attachments
+
+class AttachVideo(
+    override val type: String = "video",
+    val id: Int, //видеозаписи
+    val ownerId: Int, //Идентификатор владельца видеозаписи.
+    val title: String, //Название видеозаписи.
+    val description: String, //Текст описания видеозаписи.
+    val duration: String, //Длительность ролика  в секундах.
+    val date: Int, //Дата создания видеозаписи в формате Unixtime.
+    val comments: Int, //Количество комментариев к видеозаписи.
+    val isPrivate: Boolean = true //Поле возвращается, если видеозапись приватная (например, была загружена в личное сообщение), всегда содержит 1.
+) : Attachments
+
+class AttachGraffiti(
+    override val type: String = "graffiti",
+    val id: Int, //идентификатор граффити
+    val ownerId: Int, //Идентификатор автора граффити.
+    val photo130: String, //URL изображения для предпросмотра.
+    val photo604: String //URL полноразмерного изображения.
+) : Attachments
+
+class AttachVikiPage(
+    override val type: String = "page",
+    val id: Int, //идентификатор вики-страницы.
+    val groupId: Int, //Идентификатор группы, которой принадлежит вики-страница.
+    val title: String //Название вики-страницы.
+) : Attachments
 
 data class Donut(
     var isDonut: Boolean = false,
