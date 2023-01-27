@@ -5,7 +5,7 @@ fun main() {
     val post = Post(authorId = 1, authorName = "Alex", text = "dsgssdgedgbdbed", original = null, comments = null, reposts = null, copyHistory = null, attachments = null)
     WallService.add(post)
     val post1 = Post(authorId = 35, authorName = "Petrovych", text = "sldg elrbjl trjbn khtkj gskul", original = null, comments = null, reposts = null, copyHistory = null, attachments = null)
-    val post2 = Post(authorId = 12, authorName = "Kolya Usypov", text = "Привет", comments = null, original = post1, reposts = null, copyHistory = null, attachments = null)
+    var post2 = Post(authorId = 12, authorName = "Kolya Usypov", text = "Привет", comments = null, original = post1, reposts = null, copyHistory = null, attachments = null)
     WallService.add(post1)
 
     WallService.likeById(post1.id)
@@ -24,7 +24,7 @@ fun main() {
     WallService.likeById(post2.id)
     WallService.likeById(post1.id)
     println("----------------------")
-    println(WallService.getPostString())
+    WallService.getPostString()
 
     var attach: Array<Attachments> = emptyArray()
     attach += AttachAudio(
@@ -46,8 +46,12 @@ fun main() {
     attach += AttachPhoto("photo", 3, 5, "130", "604")
 
     for (i in attach) {
-        println(i.type)
+        //println(i.type)
+        println(i.toString())
     }
+
+    WallService.update(post2.copy(attachments = attach))
+    WallService.getPostString(post2.id)
 }
 
 object CorrectId {
@@ -110,7 +114,11 @@ class AttachPhoto(
     val ownerId: Int, //Идентификатор владельца фотографии.
     val photo130: String, //URL изображения для предпросмотра.
     val photo604: String //URL полноразмерного изображения.
-) : Attachments
+) : Attachments {
+    override fun toString(): String {
+        return "type: $type, id: $id, photo130: $photo130, photo604: $photo604"
+    }
+}
 
 class AttachAudio(
     override val type: String = "audio",
@@ -126,7 +134,11 @@ class AttachAudio(
     val date: Int, //Дата добавления.
     val noSearch: Boolean, //если включена опция «Не выводить при поиске». Если опция отключена, поле не возвращается.
     val isHq: Boolean // если аудио в высоком качестве.
-) : Attachments
+) : Attachments {
+    override fun toString(): String {
+        return "type: $type, id: $id, artist: $artist, title: $title"
+    }
+}
 
 class AttachVideo(
     override val type: String = "video",
@@ -138,7 +150,11 @@ class AttachVideo(
     val date: Int, //Дата создания видеозаписи в формате Unixtime.
     val comments: Int, //Количество комментариев к видеозаписи.
     val isPrivate: Boolean = true //Поле возвращается, если видеозапись приватная (например, была загружена в личное сообщение), всегда содержит 1.
-) : Attachments
+) : Attachments {
+    override fun toString(): String {
+        return "type: $type, id: $id, title: $title, description: $description"
+    }
+}
 
 class AttachGraffiti(
     override val type: String = "graffiti",
@@ -146,14 +162,22 @@ class AttachGraffiti(
     val ownerId: Int, //Идентификатор автора граффити.
     val photo130: String, //URL изображения для предпросмотра.
     val photo604: String //URL полноразмерного изображения.
-) : Attachments
+) : Attachments {
+    override fun toString(): String {
+        return "type: $type, id: $id, photo130: $photo130, photo604: $photo604"
+    }
+}
 
 class AttachVikiPage(
     override val type: String = "page",
     val id: Int, //идентификатор вики-страницы.
     val groupId: Int, //Идентификатор группы, которой принадлежит вики-страница.
     val title: String //Название вики-страницы.
-) : Attachments
+) : Attachments {
+    override fun toString(): String {
+        return "type: $type, id: $id, title: $title"
+    }
+}
 
 data class Donut(
     var isDonut: Boolean = false,
@@ -213,10 +237,12 @@ data class Likes(
 object WallService {
     private var posts = emptyArray<Post>()
 
-    fun getPostString() {
-        for (i in posts) {
-            println(i.toString())
+    fun getPostString(id: Int = 0) {
+        when (id) {
+            0 -> for (i in posts) println(i.toString())
+            else -> for (i in posts) if (i.id == id) println(i.toString())
         }
+
     }
 
     fun clear() {
