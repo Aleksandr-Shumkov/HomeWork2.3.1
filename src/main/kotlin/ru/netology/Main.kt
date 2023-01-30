@@ -27,23 +27,9 @@ fun main() {
     //WallService.getPostString()
 
     var attach: Array<Attachments> = emptyArray()
-    attach += AttachAudio(
-        "audio",
-        1,
-        1,
-        "Pevec",
-        "title",
-        305,
-        "url",
-        5,
-        2,
-        3,
-        0,
-        false,
-        true
-    )
+    attach += Audio(1, 1, "Pevec", "title", 305, "url", 5, 2, 3, 0, false, true)
 
-    attach += AttachPhoto("photo", 3, 5, "130", "604")
+    attach += Photo(3, 5, "130", "604")
 
     WallService.update(post2.copy(attachments = attach))
     //WallService.getPostString(post2.id)
@@ -106,19 +92,26 @@ data class Post(
 abstract class Attachments
 
 class AttachPhoto(
-    val type: String = "photo",
+    val type: String = "photo"
+)
+
+class Photo(
     val id: Int, //Идентификатор фотографии.
     val ownerId: Int, //Идентификатор владельца фотографии.
     val photo130: String, //URL изображения для предпросмотра.
-    val photo604: String //URL полноразмерного изображения.
+    val photo604: String, //URL полноразмерного изображения.
+    val photo: AttachPhoto = AttachPhoto()
 ) : Attachments() {
     override fun toString(): String {
-        return "type: $type, id: $id, photo130: $photo130, photo604: $photo604"
+        return "type: ${photo.type}, id: $id, photo130: $photo130, photo604: $photo604"
     }
 }
 
 class AttachAudio(
-    val type: String = "audio",
+    val type: String = "audio"
+)
+
+class Audio(
     val id: Int, //Идентификатор аудиозаписи.
     val ownerId: Int, //Идентификатор владельца аудиозаписи.
     val artist: String, //Исполнитель
@@ -130,15 +123,19 @@ class AttachAudio(
     val genreId: Int, //Идентификатор жанра из списка аудио жанров.
     val date: Int, //Дата добавления.
     val noSearch: Boolean, //если включена опция «Не выводить при поиске». Если опция отключена, поле не возвращается.
-    val isHq: Boolean // если аудио в высоком качестве.
-) : Attachments () {
+    val isHq: Boolean, // если аудио в высоком качестве.
+    val audio: AttachAudio = AttachAudio()
+) : Attachments() {
     override fun toString(): String {
-        return "type: $type, id: $id, artist: $artist, title: $title"
+        return "type: ${audio.type}, id: $id, artist: $artist, title: $title"
     }
 }
 
 class AttachVideo(
-    val type: String = "video",
+    val type: String = "video"
+)
+
+open class Video(
     val id: Int, //видеозаписи
     val ownerId: Int, //Идентификатор владельца видеозаписи.
     val title: String, //Название видеозаписи.
@@ -146,33 +143,42 @@ class AttachVideo(
     val duration: String, //Длительность ролика  в секундах.
     val date: Int, //Дата создания видеозаписи в формате Unixtime.
     val comments: Int, //Количество комментариев к видеозаписи.
-    val isPrivate: Boolean = true //Поле возвращается, если видеозапись приватная (например, была загружена в личное сообщение), всегда содержит 1.
+    val isPrivate: Boolean = true, //Поле возвращается, если видеозапись приватная (например, была загружена в личное сообщение), всегда содержит 1.
+    val video: AttachVideo = AttachVideo()
 ) : Attachments() {
     override fun toString(): String {
-        return "type: $type, id: $id, title: $title, description: $description"
+        return "type: ${video.type}, id: $id, title: $title, description: $description"
     }
 }
 
 class AttachGraffiti(
-    val type: String = "graffiti",
+    val type: String = "graffiti"
+)
+
+class Graffiti(
     val id: Int, //идентификатор граффити
     val ownerId: Int, //Идентификатор автора граффити.
     val photo130: String, //URL изображения для предпросмотра.
-    val photo604: String //URL полноразмерного изображения.
+    val photo604: String, //URL полноразмерного изображения.
+    val graffiti: AttachGraffiti = AttachGraffiti()
 ) : Attachments() {
     override fun toString(): String {
-        return "type: $type, id: $id, photo130: $photo130, photo604: $photo604"
+        return "type: ${graffiti.type}, id: $id, photo130: $photo130, photo604: $photo604"
     }
 }
 
 class AttachVikiPage(
-    val type: String = "page",
+    val type: String = "page"
+)
+
+open class VikiPage(
     val id: Int, //идентификатор вики-страницы.
+    val vikiPage: AttachVikiPage = AttachVikiPage(),
     val groupId: Int, //Идентификатор группы, которой принадлежит вики-страница.
     val title: String //Название вики-страницы.
 ) : Attachments() {
     override fun toString(): String {
-        return "type: $type, id: $id, title: $title"
+        return "type: ${vikiPage.type}, id: $id, title: $title"
     }
 }
 
@@ -262,11 +268,11 @@ object WallService {
                     if (i.id == id) {
                         for (attach in i.attachments)
                             when (attach) {
-                                is AttachAudio -> println("audio:  $attach")
-                                is AttachPhoto -> println("photo:  $attach")
-                                is AttachVikiPage -> println("viki page:  $attach")
-                                is AttachVideo -> println("video:  $attach")
-                                is AttachGraffiti -> println("graffiti:  $attach")
+                                is Audio -> println("audio:  $attach")
+                                is Photo -> println("photo:  $attach")
+                                is VikiPage -> println("viki page:  $attach")
+                                is Video -> println("video:  $attach")
+                                is Graffiti -> println("graffiti:  $attach")
                             }
                     }
                 }
