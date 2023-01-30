@@ -2,10 +2,10 @@ package ru.netology
 
 fun main() {
     //проверка лайков
-    val post = Post(authorId = 1, authorName = "Alex", text = "dsgssdgedgbdbed", original = null, comments = null, reposts = null, copyHistory = null, attachments = null)
+    val post = Post(authorId = 1, authorName = "Alex", text = "dsgssdgedgbdbed", original = null, comments = null, reposts = null, copyHistory = null)
     WallService.add(post)
-    val post1 = Post(authorId = 35, authorName = "Petrovych", text = "sldg elrbjl trjbn khtkj gskul", original = null, comments = null, reposts = null, copyHistory = null, attachments = null)
-    var post2 = Post(authorId = 12, authorName = "Kolya Usypov", text = "Привет", comments = null, original = post1, reposts = null, copyHistory = null, attachments = null)
+    val post1 = Post(authorId = 35, authorName = "Petrovych", text = "sldg elrbjl trjbn khtkj gskul", original = null, comments = null, reposts = null, copyHistory = null)
+    var post2 = Post(authorId = 12, authorName = "Kolya Usypov", text = "Привет", comments = null, original = post1, reposts = null, copyHistory = null)
     WallService.add(post1)
 
     WallService.likeById(post1.id)
@@ -14,17 +14,17 @@ fun main() {
     WallService.likeById(post1.id)
     WallService.likeById(post1.id)
 
-    println(WallService.getPostString())
+    //println(WallService.getPostString())
 
 
     println("----------------------")
-    println(WallService.getPostString())
+    //println(WallService.getPostString())
 
     WallService.add(post2)
     WallService.likeById(post2.id)
     WallService.likeById(post1.id)
     println("----------------------")
-    WallService.getPostString()
+    //WallService.getPostString()
 
     var attach: Array<Attachments> = emptyArray()
     attach += AttachAudio(
@@ -45,13 +45,11 @@ fun main() {
 
     attach += AttachPhoto("photo", 3, 5, "130", "604")
 
-    for (i in attach) {
-        //println(i.type)
-        println(i.toString())
-    }
-
     WallService.update(post2.copy(attachments = attach))
-    WallService.getPostString(post2.id)
+    //WallService.getPostString(post2.id)
+
+    WallService.getPostAttach(post2.id)
+
 }
 
 object CorrectId {
@@ -101,27 +99,26 @@ data class Post(
     val friendsOnly: Boolean = false,
     val canPin: Boolean = false,
     val canEdit: Boolean = true,
-    val attachments: Array<Attachments>?
+    val attachments: Array<Attachments> = emptyArray()
 )
 
-interface Attachments {
-    val type: String
-}
+//interface Attachments {
+abstract class Attachments
 
 class AttachPhoto(
-    override val type: String = "photo",
+    val type: String = "photo",
     val id: Int, //Идентификатор фотографии.
     val ownerId: Int, //Идентификатор владельца фотографии.
     val photo130: String, //URL изображения для предпросмотра.
     val photo604: String //URL полноразмерного изображения.
-) : Attachments {
+) : Attachments() {
     override fun toString(): String {
         return "type: $type, id: $id, photo130: $photo130, photo604: $photo604"
     }
 }
 
 class AttachAudio(
-    override val type: String = "audio",
+    val type: String = "audio",
     val id: Int, //Идентификатор аудиозаписи.
     val ownerId: Int, //Идентификатор владельца аудиозаписи.
     val artist: String, //Исполнитель
@@ -134,14 +131,14 @@ class AttachAudio(
     val date: Int, //Дата добавления.
     val noSearch: Boolean, //если включена опция «Не выводить при поиске». Если опция отключена, поле не возвращается.
     val isHq: Boolean // если аудио в высоком качестве.
-) : Attachments {
+) : Attachments () {
     override fun toString(): String {
         return "type: $type, id: $id, artist: $artist, title: $title"
     }
 }
 
 class AttachVideo(
-    override val type: String = "video",
+    val type: String = "video",
     val id: Int, //видеозаписи
     val ownerId: Int, //Идентификатор владельца видеозаписи.
     val title: String, //Название видеозаписи.
@@ -150,30 +147,30 @@ class AttachVideo(
     val date: Int, //Дата создания видеозаписи в формате Unixtime.
     val comments: Int, //Количество комментариев к видеозаписи.
     val isPrivate: Boolean = true //Поле возвращается, если видеозапись приватная (например, была загружена в личное сообщение), всегда содержит 1.
-) : Attachments {
+) : Attachments() {
     override fun toString(): String {
         return "type: $type, id: $id, title: $title, description: $description"
     }
 }
 
 class AttachGraffiti(
-    override val type: String = "graffiti",
+    val type: String = "graffiti",
     val id: Int, //идентификатор граффити
     val ownerId: Int, //Идентификатор автора граффити.
     val photo130: String, //URL изображения для предпросмотра.
     val photo604: String //URL полноразмерного изображения.
-) : Attachments {
+) : Attachments() {
     override fun toString(): String {
         return "type: $type, id: $id, photo130: $photo130, photo604: $photo604"
     }
 }
 
 class AttachVikiPage(
-    override val type: String = "page",
+    val type: String = "page",
     val id: Int, //идентификатор вики-страницы.
     val groupId: Int, //Идентификатор группы, которой принадлежит вики-страница.
     val title: String //Название вики-страницы.
-) : Attachments {
+) : Attachments() {
     override fun toString(): String {
         return "type: $type, id: $id, title: $title"
     }
@@ -253,6 +250,29 @@ object WallService {
     fun add(post: Post): Post {
         posts += post
         return posts.last()
+    }
+
+    fun getPostAttach(id: Int) {
+        when (id) {
+            0 -> {
+                println("У вас отсутствует корректный id поста.")
+            }
+            else -> {
+                for (i in posts) {
+                    if (i.id == id) {
+                        for (attach in i.attachments)
+                            when (attach) {
+                                is AttachAudio -> println("audio:  $attach")
+                                is AttachPhoto -> println("photo:  $attach")
+                                is AttachVikiPage -> println("viki page:  $attach")
+                                is AttachVideo -> println("video:  $attach")
+                                is AttachGraffiti -> println("graffiti:  $attach")
+                            }
+                    }
+                }
+            }
+        }
+
     }
 
     fun update(post: Post): Boolean {
